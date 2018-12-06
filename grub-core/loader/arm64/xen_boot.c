@@ -429,7 +429,7 @@ grub_cmd_xen_module (grub_command_t cmd __attribute__((unused)),
 
   if (nounzip)
     grub_file_filter_disable_compression ();
-  file = grub_file_open (argv[0]);
+  file = grub_file_open (argv[0], GRUB_FILE_TYPE_XEN_MODULE);
   if (!file)
     goto fail;
 
@@ -461,7 +461,7 @@ grub_cmd_xen_hypervisor (grub_command_t cmd __attribute__ ((unused)),
       goto fail;
     }
 
-  file = grub_file_open (argv[0]);
+  file = grub_file_open (argv[0], GRUB_FILE_TYPE_XEN_HYPERVISOR);
   if (!file)
     goto fail;
 

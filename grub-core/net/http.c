@@ -125,7 +125,7 @@ parse_line (grub_file_t file, http_data_t data, char *ptr, grub_size_t len)
 	     valid answers like 403 will trigger this very generic message.  */
 	  data->errmsg = grub_xasprintf (_("unsupported HTTP error %d: %s"),
 					 code, ptr);
-	  return GRUB_ERR_NONE;
+	  return GRUB_ERR_FILE_READ_ERROR;
 	}
       data->first_line_recv = 1;
       return GRUB_ERR_NONE;

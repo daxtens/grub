@@ -36,7 +36,7 @@ AC_INIT([GRUB],[2.05],[bug-grub@gnu.org])
 AC_CONFIG_AUX_DIR([build-aux])
 
 # We don't want -g -O2 by default in CFLAGS
-: ${CFLAGS=""}
+: ${CFLAGS='-std=gnu99'}
 
 # Checks for build, host and target systems.
 AC_CANONICAL_BUILD
@@ -79,6 +79,12 @@ grub_TRANSFORM([grub-file])
 if test "x$TARGET_CFLAGS" = x; then
   TARGET_CFLAGS="$TARGET_CFLAGS -Os"
 fi
+
+TARGET_CFLAGS="$TARGET_CFLAGS -std=gnu99"
+
+BUILD_CFLAGS="$BUILD_CFLAGS -std=gnu99"
+
+HOST_CFLAGS="$HOST_CFLAGS -std=gnu99"
 
 # Default HOST_CPPFLAGS
 HOST_CPPFLAGS="$HOST_CPPFLAGS -Wall -W"

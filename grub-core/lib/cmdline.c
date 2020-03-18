@@ -20,31 +20,6 @@
 #include <grub/lib/cmdline.h>
 #include <grub/misc.h>
 
-static unsigned int check_arg (char *c, int *has_space)
-{
-  int space = 0;
-  unsigned int size = 0;
-
-  while (*c)
-    {
-      if (*c == '\\' || *c == '\'' || *c == '"')
-	size++;
-      else if (*c == ' ')
-	space = 1;
-
-      size++;
-      c++;
-    }
-
-  if (space)
-    size += 2;
-
-  if (has_space)
-    *has_space = space;
-
-  return size;
-}
-
 unsigned int grub_loader_cmdline_size (int argc, char *argv[])
 {
   int i;
@@ -52,7 +27,7 @@ unsigned int grub_loader_cmdline_size (int argc, char *argv[])
 
   for (i = 0; i < argc; i++)
     {
-      size += check_arg (argv[i], 0);
+      size += grub_strlen(argv[i]);
       size++; /* Separator space or NULL.  */
     }
 
@@ -66,36 +41,21 @@ grub_err_t
 grub_create_loader_cmdline (int argc, char *argv[], char *buf,
 			    grub_size_t size, enum grub_verify_string_type type)
 {
-  int i, space;
+  int i;
   unsigned int arg_size;
-  char *c, *orig_buf = buf;
+  char *orig_buf = buf;
 
   for (i = 0; i < argc; i++)
     {
-      c = argv[i];
-      arg_size = check_arg(argv[i], &space);
-      arg_size++; /* Separator space or NULL.  */
+      arg_size = grub_strlen(argv[i]);
 
-      if (size < arg_size)
+      /* Separator space or NULL.  */
+      if (size < arg_size + 1)
 	break;
 
-      size -= arg_size;
-
-      if (space)
-	*buf++ = '"';
-
-      while (*c)
-	{
-	  if (*c == '\\' || *c == '\'' || *c == '"')
-	    *buf++ = '\\';
-
-	  *buf++ = *c;
-	  c++;
-	}
-
-      if (space)
-	*buf++ = '"';
-
+      grub_memcpy(buf, argv[i], arg_size);
+      size -= arg_size + 1;
+      buf += arg_size;
       *buf++ = ' ';
     }
 

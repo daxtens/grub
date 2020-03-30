@@ -289,6 +289,30 @@ grub_net_configure_by_dhcp_ack (const char *name,
       boot_file_len = sizeof (bp->boot_file);
     }
 
+      grub_snprintf (server_ip, sizeof (server_ip), "%d.%d.%d.%d",
+		     ((grub_uint8_t *) &bp->client_ip)[0],
+		     ((grub_uint8_t *) &bp->client_ip)[1],
+		     ((grub_uint8_t *) &bp->client_ip)[2],
+		     ((grub_uint8_t *) &bp->client_ip)[3]);
+      grub_env_set_net_property ("olh", "client_ip", server_ip, sizeof (server_ip));
+      grub_snprintf (server_ip, sizeof (server_ip), "%d.%d.%d.%d",
+		     ((grub_uint8_t *) &bp->your_ip)[0],
+		     ((grub_uint8_t *) &bp->your_ip)[1],
+		     ((grub_uint8_t *) &bp->your_ip)[2],
+		     ((grub_uint8_t *) &bp->your_ip)[3]);
+      grub_env_set_net_property ("olh", "your_ip", server_ip, sizeof (server_ip));
+      grub_snprintf (server_ip, sizeof (server_ip), "%d.%d.%d.%d",
+		     ((grub_uint8_t *) &bp->server_ip)[0],
+		     ((grub_uint8_t *) &bp->server_ip)[1],
+		     ((grub_uint8_t *) &bp->server_ip)[2],
+		     ((grub_uint8_t *) &bp->server_ip)[3]);
+      grub_env_set_net_property ("olh", "server_ip", server_ip, sizeof (server_ip));
+      grub_snprintf (server_ip, sizeof (server_ip), "%d.%d.%d.%d",
+		     ((grub_uint8_t *) &bp->gateway_ip)[0],
+		     ((grub_uint8_t *) &bp->gateway_ip)[1],
+		     ((grub_uint8_t *) &bp->gateway_ip)[2],
+		     ((grub_uint8_t *) &bp->gateway_ip)[3]);
+      grub_env_set_net_property ("olh", "gateway_ip", server_ip, sizeof (server_ip));
   if (bp->server_ip)
     {
       grub_snprintf (server_ip, sizeof (server_ip), "%d.%d.%d.%d",

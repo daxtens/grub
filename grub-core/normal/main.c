@@ -302,6 +302,9 @@ grub_enter_normal_mode (const char *config)
   grub_boot_time ("Entering normal mode");
   nested_level++;
   grub_normal_execute (config, 0, 0);
+#ifdef FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION
+  grub_exit();
+#endif
   grub_boot_time ("Entering shell");
   grub_cmdline_run (0, 1);
   nested_level--;

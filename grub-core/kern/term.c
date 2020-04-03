@@ -109,6 +109,10 @@ grub_getkey (void)
 {
   int ret;
 
+#if FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION
+  return 0;
+#endif
+
   grub_refresh ();
 
   while (1)

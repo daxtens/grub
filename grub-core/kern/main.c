@@ -312,5 +312,8 @@ grub_main (void)
   grub_boot_time ("After execution of embedded config. Attempt to go to normal mode");
 
   grub_load_normal_mode ();
+#ifdef FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION
+  grub_exit();
+#endif
   grub_rescue_run ();
 }

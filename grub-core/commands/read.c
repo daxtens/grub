@@ -36,6 +36,11 @@ grub_getline (void)
   char *tmp;
   char c;
 
+#ifdef FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION
+  // fuzzing: don't run this! it would hang.
+  return NULL;
+#endif
+
   i = 0;
   line = grub_malloc (1 + i + sizeof('\0'));
   if (! line)

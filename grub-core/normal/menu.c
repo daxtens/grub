@@ -61,6 +61,7 @@ struct timeout_style_name {
 void
 grub_wait_after_message (void)
 {
+#ifndef FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION
   grub_uint64_t endtime;
   grub_xputs ("\n");
   grub_printf_ (N_("Press any key to continue..."));
@@ -72,6 +73,7 @@ grub_wait_after_message (void)
 	 && grub_getkey_noblock () == GRUB_TERM_NO_KEY);
 
   grub_xputs ("\n");
+#endif
 }
 
 /* Get a menu entry by its index in the entry list.  */
@@ -586,6 +588,15 @@ run_menu (grub_menu_t menu, int nested, int *auto_boot)
      the first entry.  */
   if (default_entry < 0 || default_entry >= menu->size)
     default_entry = 0;
+
+
+#ifdef FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION
+  /* At this point, we need input, which we can't get.
+     Draw the menu and then exit. */
+  menu_init (default_entry, menu, nested);
+  grub_exit ();
+  return -1;
+#endif
 
   timeout = grub_menu_get_timeout ();
   if (timeout < 0)

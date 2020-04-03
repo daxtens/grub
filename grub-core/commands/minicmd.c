@@ -202,9 +202,16 @@ GRUB_MOD_INIT(minicmd)
   cmd_help =
     grub_register_command ("help", grub_mini_cmd_help,
 			   0, N_("Show this message."));
+
+#ifndef FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION
   cmd_dump =
     grub_register_command ("dump", grub_mini_cmd_dump,
 			   N_("ADDR [SIZE]"), N_("Show memory contents."));
+#else
+  (void) grub_mini_cmd_dump;
+  (void) cmd_dump;
+#endif
+
   cmd_rmmod =
     grub_register_command ("rmmod", grub_mini_cmd_rmmod,
 			   N_("MODULE"), N_("Remove a module."));
@@ -220,7 +227,9 @@ GRUB_MOD_FINI(minicmd)
 {
   grub_unregister_command (cmd_cat);
   grub_unregister_command (cmd_help);
+#ifndef FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION
   grub_unregister_command (cmd_dump);
+#endif
   grub_unregister_command (cmd_rmmod);
   grub_unregister_command (cmd_lsmod);
   grub_unregister_command (cmd_exit);

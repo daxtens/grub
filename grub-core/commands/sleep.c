@@ -105,6 +105,10 @@ static grub_extcmd_t cmd;
 
 GRUB_MOD_INIT(sleep)
 {
+#ifdef FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION
+  return;
+#endif
+
   cmd = grub_register_extcmd ("sleep", grub_cmd_sleep, 0,
 			      N_("NUMBER_OF_SECONDS"),
 			      N_("Wait for a specified number of seconds."),
@@ -113,5 +117,9 @@ GRUB_MOD_INIT(sleep)
 
 GRUB_MOD_FINI(sleep)
 {
+#ifdef FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION
+  return;
+#endif
+
   grub_unregister_extcmd (cmd);
 }

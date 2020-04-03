@@ -121,6 +121,10 @@ grub_cmd_write (grub_command_t cmd, int argc, char **argv)
 
 GRUB_MOD_INIT(memrw)
 {
+#ifdef FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION
+  return;
+#endif
+
   cmd_read_byte =
     grub_register_extcmd ("read_byte", grub_cmd_read, 0,
 			  N_("ADDR"), N_("Read 8-bit value from ADDR."),
@@ -149,6 +153,10 @@ GRUB_MOD_INIT(memrw)
 
 GRUB_MOD_FINI(memrw)
 {
+#ifdef FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION
+  return;
+#endif
+
   grub_unregister_extcmd (cmd_read_byte);
   grub_unregister_extcmd (cmd_read_word);
   grub_unregister_extcmd (cmd_read_dword);

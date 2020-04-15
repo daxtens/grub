@@ -52,15 +52,7 @@
 #ifdef __i386__
 #define HEAP_MAX_SIZE		(unsigned long) (64 * 1024 * 1024)
 #else
-#define HEAP_MAX_SIZE		(unsigned long) (32 * 1024 * 1024)
-#endif
-
-/* If possible, we will avoid claiming heap above this address, because it
-   seems to cause relocation problems with OSes that link at 4 MiB */
-#ifdef __i386__
-#define HEAP_MAX_ADDR		(unsigned long) (64 * 1024 * 1024)
-#else
-#define HEAP_MAX_ADDR		(unsigned long) (32 * 1024 * 1024)
+#define HEAP_MAX_SIZE		0x80000000UL
 #endif
 
 extern char _start[];
@@ -156,15 +148,73 @@ grub_claim_heap (void)
 				 + GRUB_KERNEL_MACHINE_STACK_SIZE), 0x200000);
 }
 #else
-/* Helper for grub_claim_heap.  */
+// per the PAPR OF binding (and our build process) we are a 32 bit binary, so we deliberately do not
+// consider memory beyond the 4GB boundary.
+// as such we use 32 bit ints for size.
+struct heap_init_ctx {
+  unsigned int block_num;
+  grub_uint32_t size;
+  grub_uint32_t largest_block_size;
+  unsigned int largest_block_idx;
+  grub_uint32_t desired_size;
+};
+
+#define LINUX_RMO_TOP 0x30000000
+
+/* Helper for grub_claim_heap on powerpc. */
+static int
+heap_size (grub_uint64_t addr, grub_uint64_t len, grub_memory_type_t type,
+	   void *data)
+{
+  struct heap_init_ctx *ctx = data;
+
+  if (type != GRUB_MEMORY_AVAILABLE)
+    return 0;
+
+  // We build on ppc as a 32bit binary, so we are limited to memory below 4G
+  if (addr > 0xffffffffUL)
+    return 0;
+
+  if (addr + len > 0xffffffffUL)
+    len = 0xffffffffUL - addr;
+
+  // we have to be a bit careful around 0x3000_0000 - Linux puts the top of the
+  // RMO there (768MB), and then tries to allocate from there down. So make sure
+  // we don't accidentally put a bunch of stuff in the region leading up to there
+
+  if (addr < LINUX_RMO_TOP && (addr + len) > LINUX_RMO_TOP)
+    {
+      len = addr + len - LINUX_RMO_TOP;
+      addr = LINUX_RMO_TOP;
+    }
+
+  ctx->size += len;
+  if (len > ctx->largest_block_size)
+    {
+      ctx->largest_block_size = len;
+      ctx->largest_block_idx = ctx->block_num;
+    }
+
+  ctx->block_num ++;
+
+  return 0;
+}
+
 static int
 heap_init (grub_uint64_t addr, grub_uint64_t len, grub_memory_type_t type,
 	   void *data)
 {
-  unsigned long *total = data;
+  struct heap_init_ctx *ctx = data;
 
   if (type != GRUB_MEMORY_AVAILABLE)
     return 0;
+
+  // We build on ppc as a 32bit binary, so we are limited to memory below 4G
+  if (addr > 0xffffffffUL)
+    return 0;
+
+  if (addr + len > 0xffffffffUL)
+    len = 0xffffffffUL - addr;
 
   if (grub_ieee1275_test_flag (GRUB_IEEE1275_FLAG_NO_PRE1_5M_CLAIM))
     {
@@ -177,17 +227,23 @@ heap_init (grub_uint64_t addr, grub_uint64_t len, grub_memory_type_t type,
 	  addr = 0x180000;
 	}
     }
+
+  // we have to be a bit careful around 0x3000_0000 - Linux puts the top of the
+  // RMO there (768MB) even if you have more memory., and then tries to allocate from there down. So make sure
+  // we don't accidentally put a bunch of stuff in the region leading up to there
+  // now on ppc64 the memory size has to be a multiple of 256MB, so if we have 1GB
+  // and we go up from 768MB that should be a decent block.
+  // on ppc32, we can have smaller increments so we'll have to sor that out a bit better
+
+  if (addr < LINUX_RMO_TOP && (addr + len) > LINUX_RMO_TOP)
+    {
+      len = addr + len - LINUX_RMO_TOP;
+      addr = LINUX_RMO_TOP;
+    }
+
+#if 0
   len -= 1; /* Required for some firmware.  */
-
-  /* Never exceed HEAP_MAX_SIZE  */
-  if (*total + len > HEAP_MAX_SIZE)
-    len = HEAP_MAX_SIZE - *total;
-
-  /* Avoid claiming anything above HEAP_MAX_ADDR, if possible. */
-  if ((addr < HEAP_MAX_ADDR) &&				/* if it's too late, don't bother */
-      (addr + len > HEAP_MAX_ADDR) &&				/* if it wasn't available anyway, don't bother */
-      (*total + (HEAP_MAX_ADDR - addr) > HEAP_MIN_SIZE))	/* only limit ourselves when we can afford to */
-     len = HEAP_MAX_ADDR - addr;
+#endif
 
   /* In theory, firmware should already prevent this from happening by not
      listing our own image in /memory/available.  The check below is intended
@@ -200,18 +256,47 @@ heap_init (grub_uint64_t addr, grub_uint64_t len, grub_memory_type_t type,
       len = 0;
     }
 
+
+  // prefer to allocate out of largest_block; only fail to do so if
+  // the largest high block is too small
+  if (ctx->block_num == ctx->largest_block_idx)
+    {
+      if (len > ctx->desired_size)
+        len = ctx->desired_size;
+    }
+  else
+    {
+      if (ctx->desired_size > ctx->largest_block_size)
+        {
+	  if (len > ctx->desired_size - ctx->largest_block_size)
+	    len = ctx->desired_size - ctx->largest_block_size;
+        }
+      else
+        {
+	  // we don't need to allocate from this block
+	  len = 0;
+	}
+    }
+
+  if (len > ctx->desired_size)
+    len = ctx->desired_size;
+
   if (len)
     {
       grub_err_t err;
+      grub_printf("claiming %llx %llx\n", addr, len);
       /* Claim and use it.  */
       err = grub_claimmap (addr, len);
       if (err)
 	return err;
       grub_mm_init_region ((void *) (grub_addr_t) addr, len);
+      ctx->desired_size -= len;
     }
 
-  *total += len;
-  if (*total >= HEAP_MAX_SIZE)
+
+  ctx->block_num ++;
+
+  if (ctx->desired_size == 0)
     return 1;
 
   return 0;
@@ -220,13 +305,29 @@ heap_init (grub_uint64_t addr, grub_uint64_t len, grub_memory_type_t type,
 static void 
 grub_claim_heap (void)
 {
-  unsigned long total = 0;
+  struct heap_init_ctx ctx = {};
 
+  // i accept that I've broken this for now
+#if 0
   if (grub_ieee1275_test_flag (GRUB_IEEE1275_FLAG_FORCE_CLAIM))
     heap_init (GRUB_IEEE1275_STATIC_HEAP_START, GRUB_IEEE1275_STATIC_HEAP_LEN,
 	       1, &total);
   else
-    grub_machine_mmap_iterate (heap_init, &total);
+#endif
+    {
+      grub_machine_mmap_iterate (heap_size, &ctx);
+
+      grub_printf("Found %u blocks, total of %x addressible mem, largest block %u - %x\n", ctx.block_num, ctx.size, ctx.largest_block_idx, ctx.largest_block_size);
+      ctx.block_num = 0;
+      ctx.desired_size = ctx.size / 2;
+      if (ctx.desired_size < HEAP_MIN_SIZE)
+	      ctx.desired_size = HEAP_MIN_SIZE;
+      if (ctx.desired_size > HEAP_MAX_SIZE)
+        ctx.desired_size = HEAP_MAX_SIZE;
+
+      grub_machine_mmap_iterate (heap_init, &ctx);
+      
+    }
 }
 #endif
 

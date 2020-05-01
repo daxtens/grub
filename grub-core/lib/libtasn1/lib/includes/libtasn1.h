@@ -319,6 +319,8 @@ typedef struct asn1_data_node_st asn1_data_node_st;
 /*  Functions definitions          */
 /***********************************/
 
+/* Exclude this code from grub in a git rebase friendly way. */
+#if 0
 extern ASN1_API int
   asn1_parser2tree (const char *file,
 		      asn1_node * definitions, char *error_desc);
@@ -327,6 +329,7 @@ extern ASN1_API int
   asn1_parser2array (const char *inputFileName,
 		       const char *outputFileName,
 		       const char *vectorName, char *error_desc);
+#endif
 
 extern ASN1_API int
   asn1_array2tree (const asn1_static_node * array,

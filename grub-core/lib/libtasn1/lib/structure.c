@@ -76,7 +76,8 @@ _asn1_find_left (asn1_node_const node)
   return node->left;
 }
 
-
+/* Not needed in grub */
+#if 0
 int
 _asn1_create_static_structure (asn1_node_const pointer, char *output_file_name,
 			       char *vector_name)
@@ -155,7 +156,7 @@ _asn1_create_static_structure (asn1_node_const pointer, char *output_file_name,
 
   return ASN1_SUCCESS;
 }
-
+#endif
 
 /**
  * asn1_array2tree:
@@ -718,6 +719,8 @@ asn1_create_element (asn1_node_const definitions, const char *source_name,
   return res;
 }
 
+/* Not needed in grub */
+#if 0
 
 /**
  * asn1_print_structure:
@@ -1058,7 +1061,7 @@ asn1_print_structure (FILE * out, asn1_node_const structure, const char *name,
 	}
     }
 }
-
+#endif
 
 
 /**
@@ -1153,6 +1156,9 @@ asn1_find_structure_from_oid (asn1_node_const definitions, const char *oidValue)
   return NULL;			/* ASN1_ELEMENT_NOT_FOUND; */
 }
 
+// grub
+#if 0
+
 /**
  * asn1_copy_node:
  * @dst: Destination asn1 node.
@@ -1202,6 +1208,7 @@ asn1_copy_node (asn1_node dst, const char *dst_name,
 
   return result;
 }
+#endif
 
 /**
  * asn1_dup_node:

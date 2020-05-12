@@ -102,7 +102,7 @@ grub_cmd_initrd (grub_command_t cmd __attribute__ ((unused)),
   for (i = 0; i < argc; i++)
     {
       grub_file_filter_disable_compression ();
-      files[i] = grub_file_open (argv[i]);
+      files[i] = grub_file_open (argv[i], GRUB_FILE_TYPE_LINUX_INITRD);
       if (! files[i])
         goto fail;
       nfiles++;
@@ -182,7 +182,7 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
       goto fail;
     }
 
-  file = grub_file_open (argv[0]);
+  file = grub_file_open (argv[0], GRUB_FILE_TYPE_LINUX_KERNEL);
   if (! file)
     goto fail;
 

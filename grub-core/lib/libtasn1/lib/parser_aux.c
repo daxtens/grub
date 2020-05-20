@@ -40,7 +40,7 @@ char _asn1_identifierMissing[ASN1_MAX_NAME_SIZE + 1];	/* identifier name not fou
 #ifdef __clang__
 __attribute__((no_sanitize("integer")))
 #endif
-_GL_ATTRIBUTE_PURE
+__attribute__((__pure__))
 static unsigned int
 _asn1_hash_name (const char *x)
 {

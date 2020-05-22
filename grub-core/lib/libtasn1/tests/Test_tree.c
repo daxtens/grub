@@ -35,7 +35,7 @@
 #include <stdlib.h>
 
 #define ASN1_INTERNAL_BUILD
-#include "grub/libtasn1.h"
+#include "libtasn1.h"
 
 #include "Test_tree_asn1_tab.c"
 
@@ -455,7 +455,7 @@ test_type test_array[] = {
 };
 
 
-#define  error(n) grub_fatal(stderr, "Error at line %d: %s\n", __LINE__, asn1_strerror(n))
+#define  error() fprintf(stderr, "Error at line %d\n", __LINE__); exit(1)
 
 int
 main (int argc, char *argv[])
@@ -464,20 +464,63 @@ main (int argc, char *argv[])
   asn1_node definitions = NULL;
   asn1_node asn1_element = NULL;
   char errorDescription[ASN1_MAX_ERROR_DESCRIPTION_SIZE];
+  FILE *out;
   test_type *test;
   int errorCounter = 0, testCounter = 0, der_len;
   unsigned char value[1024], der[1024];
   int valueLen, tag = 0, class = 0;
   int k;
-  int start, end;
+  int start, end, verbose = 0;
   const char *str_p = NULL;
+  const char *treefile = getenv ("ASN1TREE");
 
+  if (argc > 1)
+    verbose = 1;
+
+  if (!treefile)
+    treefile = "Test_tree.asn";
+
+  if (verbose != 0)
+    {
+      printf ("\n\n/****************************************/\n");
+      printf ("/*     Test sequence : Test_tree        */\n");
+      printf ("/****************************************/\n\n");
+      printf ("ASN1TREE: %s\n", treefile);
+    }
+
+  /* Check version */
+  if (asn1_check_version ("0.2.11") == NULL)
+    printf ("\nLibrary version check ERROR:\n actual version: %s\n\n",
+	    asn1_check_version (NULL));
+
+  if (1)
+    result = asn1_parser2tree (treefile, &definitions, errorDescription);
+  else
     result =
       asn1_array2tree (Test_tree_asn1_tab, &definitions, errorDescription);
 
   if (result != ASN1_SUCCESS)
     {
-      error(result);
+      asn1_perror (result);
+      printf ("ErrorDescription = %s\n\n", errorDescription);
+      exit (1);
+    }
+
+  if (1)
+    out = stdout;
+  else
+    out = fopen ("Test_tree.out", "w");
+
+  if (out == NULL)
+    {
+      printf ("Output file ERROR\n");
+      exit (1);
+    }
+
+  if (0)
+    {
+      asn1_print_structure (out, definitions, "TEST_TREE", ASN1_PRINT_ALL);
+      fprintf (out, "\n");
     }
 
   test = test_array;
@@ -502,14 +545,13 @@ main (int argc, char *argv[])
 	  result = asn1_delete_element (asn1_element, test->par1);
 	  break;
 	case ACT_WRITE:
-	  /* skip in grub */
-	  /*if ((test->par2) && (!strcmp ("DER", test->par2)))
+	  if ((test->par2) && (!strcmp ("DER", test->par2)))
 	    result =
 	      asn1_write_value (asn1_element, test->par1, der, der_len);
 	  else
 	    result =
 	      asn1_write_value (asn1_element, test->par1, test->par2,
-				test->par3);*/
+				test->par3);
 	  break;
 	case ACT_READ:
 	case ACT_READ_BIT:
@@ -531,16 +573,14 @@ main (int argc, char *argv[])
 	  result = asn1_read_tag (asn1_element, test->par1, &tag, &class);
 	  break;
 	case ACT_ENCODING:
-	  /* skip in grub */
-	  /*der_len = test->par3;
+	  der_len = test->par3;
 	  result = asn1_der_coding (asn1_element, test->par1, der, &der_len,
-				    errorDescription);*/
+				    errorDescription);
 	  break;
 	case ACT_ENCODING_LENGTH:
-	  /* skip in grub */
-	  /*der_len = 0;
+	  der_len = 0;
 	  result = asn1_der_coding (asn1_element, test->par1, NULL, &der_len,
-				    errorDescription);*/
+				    errorDescription);
 	  break;
 	case ACT_DECODING:
 	  result = asn1_der_decoding (&asn1_element, der, der_len,
@@ -568,25 +608,23 @@ main (int argc, char *argv[])
 	  str_p = asn1_find_structure_from_oid (definitions, test->par1);
 	  break;
 	case ACT_VISIT:
-	  /* skip in grub */
-	  /*if (verbose)
+	  if (verbose)
 	    {
 	      asn1_print_structure (out, asn1_element, test->par1,
 				    test->par3);
 	      fprintf (out, "\n");
-	    }*/
+	    }
 	  result = ASN1_SUCCESS;
 	  break;
 	case ACT_PRINT_DER:
-	  /* skip in grub */
-	  /*if (verbose)
+	  if (verbose)
 	    {
 	      printf ("DER encoding len:%i\n", der_len);
 	      printf ("DER encoding: ");
 	      for (k = 0; k < der_len; k++)
 		printf ("%02x ", der[k]);
 	      printf ("\n\n");
-	    }*/
+	    }
 	  result = ASN1_SUCCESS;
 	  break;
 	case ACT_SET_DER:
@@ -619,27 +657,27 @@ main (int argc, char *argv[])
 	  if (result != test->errorNumber)
 	    {
 	      errorCounter++;
-	      grub_printf ("ERROR in %d:\n", test->line);
-	      grub_printf ("  Action %d - %s - %s - %d\n", test->action,
+	      printf ("ERROR in %d:\n", test->line);
+	      printf ("  Action %d - %s - %s - %d\n", test->action,
 		      test->par1, test->par2, test->par3);
-	      grub_printf ("  Error expected: %s\n",
+	      printf ("  Error expected: %s\n",
 		      asn1_strerror (test->errorNumber));
-	      grub_printf ("  Error detected: %s\n\n", asn1_strerror (result));
-	      error (result);
+	      printf ("  Error detected: %s\n\n", asn1_strerror (result));
+	      error ();
 	    }
 	  break;
 	case ACT_DECODING_ELEMENT:
 	  if (result != test->errorNumber)
 	    {
 	      errorCounter++;
-	      grub_printf ("ERROR in %d:\n", test->line);
-	      grub_printf ("  Action %d - %s - %s - %d\n", test->action,
+	      printf ("ERROR in %d:\n", test->line);
+	      printf ("  Action %d - %s - %s - %d\n", test->action,
 		      test->par1, test->par2, test->par3);
-	      grub_printf ("  Error expected: %s\n",
+	      printf ("  Error expected: %s\n",
 		      asn1_strerror (test->errorNumber));
-	      grub_printf ("  Error detected: %s\n", asn1_strerror (result));
-	      grub_printf ("  Error description : %s\n\n", errorDescription);
-	      error (result);
+	      printf ("  Error detected: %s\n", asn1_strerror (result));
+	      printf ("  Error description : %s\n\n", errorDescription);
+	      error ();
 	    }
 	  break;
 	case ACT_NUMBER_OF_ELEMENTS:
@@ -647,18 +685,17 @@ main (int argc, char *argv[])
 	  if ((result != test->errorNumber) || (valueLen != test->par3))
 	    {
 	      errorCounter++;
-	      grub_printf ("ERROR in %d:\n", test->line);
-	      grub_printf ("  Action %d - %s\n", test->action, test->par1);
-	      grub_printf ("  Error expected: %s - %d\n",
+	      printf ("ERROR in %d:\n", test->line);
+	      printf ("  Action %d - %s\n", test->action, test->par1);
+	      printf ("  Error expected: %s - %d\n",
 		      asn1_strerror (test->errorNumber), test->par3);
-	      grub_printf ("  Error detected: %s - %d\n\n", asn1_strerror (result),
+	      printf ("  Error detected: %s - %d\n\n", asn1_strerror (result),
 		      valueLen);
-	      error (result);
+	      error ();
 	    }
 	  break;
 	case ACT_ENCODING_LENGTH:
-	  /* skip in grub */
-	  /*if ((result != test->errorNumber) || (der_len != test->par3))
+	  if ((result != test->errorNumber) || (der_len != test->par3))
 	    {
 	      errorCounter++;
 	      printf ("ERROR in %d:\n", test->line);
@@ -668,7 +705,7 @@ main (int argc, char *argv[])
 	      printf ("  Error detected: %s - %d\n\n", asn1_strerror (result),
 		      der_len);
 	      error ();
-	    }*/
+	    }
 	  break;
 	case ACT_OID_2_STRUCTURE:
 	  if (((test->errorNumber != ASN1_SUCCESS) && (str_p != NULL)) ||
@@ -677,12 +714,12 @@ main (int argc, char *argv[])
 	       && (strcmp (str_p, test->par2))))
 	    {
 	      errorCounter++;
-	      grub_printf ("ERROR in %d:\n", test->line);
-	      grub_printf ("  Action %d - %s\n", test->action, test->par1);
-	      grub_printf ("  Error expected: %s - %s\n",
+	      printf ("ERROR in %d:\n", test->line);
+	      printf ("  Action %d - %s\n", test->action, test->par1);
+	      printf ("  Error expected: %s - %s\n",
 		      asn1_strerror (test->errorNumber), test->par2);
-	      grub_printf ("  Value detected: %s\n\n", str_p);
-	      error (test->errorNumber);
+	      printf ("  Value detected: %s\n\n", str_p);
+	      error ();
 	    }
 	  break;
 	case ACT_DECODING_START_END:
@@ -691,15 +728,15 @@ main (int argc, char *argv[])
 	      ((!strcmp (test->par2, "END")) && (end != test->par3)))
 	    {
 	      errorCounter++;
-	      grub_printf ("ERROR in %d:\n", test->line);
-	      grub_printf ("  Action %d - %s - %d\n", test->action, test->par1,
+	      printf ("ERROR in %d:\n", test->line);
+	      printf ("  Action %d - %s - %d\n", test->action, test->par1,
 		      test->par3);
-	      grub_printf ("  Error expected: %s - %s - %d\n",
+	      printf ("  Error expected: %s - %s - %d\n",
 		      asn1_strerror (test->errorNumber), test->par2,
 		      test->par3);
-	      grub_printf ("  Error detected: %s - %d - %d\n\n",
+	      printf ("  Error detected: %s - %d - %d\n\n",
 		      asn1_strerror (result), start, end);
-	      error (result);
+	      error ();
 	    }
 	  break;
 
@@ -709,15 +746,15 @@ main (int argc, char *argv[])
 	      ((!strcmp (test->par2, "CLASS")) && (class != test->par3)))
 	    {
 	      errorCounter++;
-	      grub_printf ("ERROR in %d:\n", test->line);
-	      grub_printf ("  Action %d - %s - %d\n", test->action, test->par1,
+	      printf ("ERROR in %d:\n", test->line);
+	      printf ("  Action %d - %s - %d\n", test->action, test->par1,
 		      test->par3);
-	      grub_printf ("  Error expected: %s - %s - %d\n",
+	      printf ("  Error expected: %s - %s - %d\n",
 		      asn1_strerror (test->errorNumber), test->par2,
 		      test->par3);
-	      grub_printf ("  Error detected: %s - %d - %d\n\n",
+	      printf ("  Error detected: %s - %d - %d\n\n",
 		      asn1_strerror (result), tag, class);
-	      error (result);
+	      error ();
 	    }
 
 	  break;
@@ -748,19 +785,19 @@ main (int argc, char *argv[])
 	      (valueLen != test->par3) || (k == -1))
 	    {
 	      errorCounter++;
-	      grub_printf ("ERROR in %d:\n", test->line);
-	      grub_printf ("  Action %d - %s\n", test->action, test->par1);
-	      grub_printf ("  Error expected: %s - %d - ",
+	      printf ("ERROR in %d:\n", test->line);
+	      printf ("  Action %d - %s\n", test->action, test->par1);
+	      printf ("  Error expected: %s - %d - ",
 		      asn1_strerror (test->errorNumber), test->par3);
 	      for (k = 0; k < test->par3; k++)
-		grub_printf ("%02x", (unsigned int)test->par2[k]);
-	      grub_printf ("\n  Error detected: %s - %d - ",
+		printf ("%02x", (unsigned int)test->par2[k]);
+	      printf ("\n  Error detected: %s - %d - ",
 		      asn1_strerror (result), valueLen);
 	      for (k = 0; k < valueLen; k++)
-		grub_printf ("%02x", value[k]);
-	      grub_printf ("\n\n");
+		printf ("%02x", value[k]);
+	      printf ("\n\n");
 
-	      error (result);
+	      error ();
 	    }
 
 	  break;
@@ -771,5 +808,22 @@ main (int argc, char *argv[])
       test++;
     }
 
-    return 0;
+
+  if (verbose != 0)
+    {
+      printf ("Total tests : %d\n", testCounter);
+      printf ("Total errors: %d\n", errorCounter);
+    }
+
+  /* Clear the definition structures */
+  asn1_delete_structure (&definitions);
+
+
+  if (out != stdout)
+    fclose (out);
+
+  if (errorCounter > 0)
+    return 1;
+
+  exit (0);
 }

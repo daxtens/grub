@@ -24,7 +24,7 @@
 #include <string.h>
 #include <stdlib.h>
 
-#include "libtasn1.h"
+#include "grub/libtasn1.h"
 
 struct tv
 {

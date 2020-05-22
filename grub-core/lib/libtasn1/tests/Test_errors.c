@@ -18,7 +18,7 @@
  *
  */
 
-#include "libtasn1.h"
+#include "grub/libtasn1.h"
 
 int
 main (int argc, char *argv[])

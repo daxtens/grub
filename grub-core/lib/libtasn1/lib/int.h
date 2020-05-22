@@ -35,7 +35,7 @@
 #include <sys/types.h>
 #endif
 
-#include <libtasn1.h>
+#include "grub/libtasn1.h"
 
 #define ASN1_SMALL_VALUE_SIZE 16
 

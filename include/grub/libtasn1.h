@@ -38,25 +38,13 @@
 #ifndef LIBTASN1_H
 #define LIBTASN1_H
 
-#ifndef ASN1_API
-#if defined ASN1_BUILDING && defined HAVE_VISIBILITY && HAVE_VISIBILITY
-#define ASN1_API __attribute__((__visibility__("default")))
-#elif defined ASN1_BUILDING && defined _MSC_VER && ! defined ASN1_STATIC
-#define ASN1_API __declspec(dllexport)
-#elif defined _MSC_VER && ! defined ASN1_STATIC
-#define ASN1_API __declspec(dllimport)
-#else
+/* grub: ASN1_API is not used, we must EXPORT_FUNC instead */
+#include <grub/symbol.h>
 #define ASN1_API
-#endif
-#endif
 
-#ifdef __GNUC__
-# define __LIBTASN1_CONST__  __attribute__((const))
-# define __LIBTASN1_PURE__  __attribute__((pure))
-#else
-# define __LIBTASN1_CONST__
-# define __LIBTASN1_PURE__
-#endif
+/* grub: all our supported compilers support these attributes */
+#define __LIBTASN1_CONST__  __attribute__((const))
+#define __LIBTASN1_PURE__  __attribute__((pure))
 
 #include <sys/types.h>
 #include <time.h>
@@ -319,7 +307,7 @@ typedef struct asn1_data_node_st asn1_data_node_st;
 /*  Functions definitions          */
 /***********************************/
 
-/* Exclude this code from grub in a git rebase friendly way. */
+/* These functions are not used in grub and should not be referenced. */
 #if 0
 extern ASN1_API int
   asn1_parser2tree (const char *file,
@@ -332,104 +320,115 @@ extern ASN1_API int
 #endif
 
 extern ASN1_API int
-  asn1_array2tree (const asn1_static_node * array,
-		     asn1_node * definitions, char *errorDescription);
+  EXPORT_FUNC(asn1_array2tree) (const asn1_static_node * array,
+				asn1_node * definitions, char *errorDescription);
 
+#if 0
 extern ASN1_API void
   asn1_print_structure (FILE * out, asn1_node_const structure,
 			  const char *name, int mode);
+#endif
 
 extern ASN1_API int
   asn1_create_element (asn1_node_const definitions,
 			 const char *source_name, asn1_node * element);
 
-extern ASN1_API int asn1_delete_structure (asn1_node * structure);
+extern ASN1_API int EXPORT_FUNC(asn1_delete_structure) (asn1_node * structure);
 
-extern ASN1_API int asn1_delete_structure2 (asn1_node * structure, unsigned int flags);
+extern ASN1_API int EXPORT_FUNC(asn1_delete_structure2) (asn1_node * structure, unsigned int flags);
 
 extern ASN1_API int
-  asn1_delete_element (asn1_node structure, const char *element_name);
+  EXPORT_FUNC(asn1_delete_element) (asn1_node structure, const char *element_name);
 
+#if 0
 extern ASN1_API int
   asn1_write_value (asn1_node node_root, const char *name,
 		      const void *ivalue, int len);
+#endif
 
 extern ASN1_API int
-  asn1_read_value (asn1_node_const root, const char *name,
-		     void *ivalue, int *len);
+  EXPORT_FUNC(asn1_read_value) (asn1_node_const root, const char *name,
+				void *ivalue, int *len);
 
 extern ASN1_API int
-  asn1_read_value_type (asn1_node_const root, const char *name,
-			  void *ivalue, int *len, unsigned int *etype);
+  EXPORT_FUNC(asn1_read_value_type) (asn1_node_const root, const char *name,
+				     void *ivalue, int *len, unsigned int *etype);
 
 extern ASN1_API int
-  asn1_read_node_value (asn1_node_const node, asn1_data_node_st * data);
+  EXPORT_FUNC(asn1_read_node_value) (asn1_node_const node, asn1_data_node_st * data);
 
 extern ASN1_API int
-  asn1_number_of_elements (asn1_node_const element, const char *name, int *num);
+  EXPORT_FUNC(asn1_number_of_elements) (asn1_node_const element, const char *name, int *num);
 
+#if 0
 extern ASN1_API int
   asn1_der_coding (asn1_node_const element, const char *name,
 		     void *ider, int *len, char *ErrorDescription);
+#endif
 
 extern ASN1_API int
-  asn1_der_decoding2 (asn1_node *element, const void *ider,
-			int *max_ider_len, unsigned int flags,
-			char *errorDescription);
+  EXPORT_FUNC(asn1_der_decoding2) (asn1_node *element, const void *ider,
+				   int *max_ider_len, unsigned int flags,
+				   char *errorDescription);
 
 extern ASN1_API int
-  asn1_der_decoding (asn1_node * element, const void *ider,
-		       int ider_len, char *errorDescription);
+  EXPORT_FUNC(asn1_der_decoding) (asn1_node * element, const void *ider,
+				  int ider_len, char *errorDescription);
 
+#if 0
 /* Do not use. Use asn1_der_decoding() instead. */
 extern ASN1_API int
   asn1_der_decoding_element (asn1_node * structure,
 			       const char *elementName,
 			       const void *ider, int len,
 			       char *errorDescription) _ASN1_GCC_ATTR_DEPRECATED;
+#endif
 
 extern ASN1_API int
-  asn1_der_decoding_startEnd (asn1_node element,
-				const void *ider, int ider_len,
-				const char *name_element,
-				int *start, int *end);
+  EXPORT_FUNC(asn1_der_decoding_startEnd) (asn1_node element,
+					   const void *ider, int ider_len,
+					   const char *name_element,
+					   int *start, int *end);
 
 extern ASN1_API int
-  asn1_expand_any_defined_by (asn1_node_const definitions, asn1_node * element);
+  EXPORT_FUNC(asn1_expand_any_defined_by) (asn1_node_const definitions, asn1_node * element);
 
 extern ASN1_API int
-  asn1_expand_octet_string (asn1_node_const definitions,
-			      asn1_node * element,
-			      const char *octetName, const char *objectName);
+  EXPORT_FUNC(asn1_expand_octet_string) (asn1_node_const definitions,
+					 asn1_node * element,
+					 const char *octetName, const char *objectName);
 
 extern ASN1_API int
-  asn1_read_tag (asn1_node_const root, const char *name,
-		   int *tagValue, int *classValue);
+  EXPORT_FUNC(asn1_read_tag) (asn1_node_const root, const char *name,
+			      int *tagValue, int *classValue);
 
-extern ASN1_API const char *asn1_find_structure_from_oid (asn1_node_const
-							    definitions,
-							    const char
-							    *oidValue);
+extern ASN1_API const char *
+  EXPORT_FUNC(asn1_find_structure_from_oid) (asn1_node_const definitions,
+					     const char *oidValue);
 
+#if 0
 __LIBTASN1_PURE__
 extern ASN1_API const char *asn1_check_version (const char *req_version);
+#endif
 
 __LIBTASN1_PURE__
 extern ASN1_API const char *asn1_strerror (int error);
 
+#if 0
 extern ASN1_API void asn1_perror (int error);
+#endif
 
 #define ASN1_MAX_TAG_SIZE 4
 #define ASN1_MAX_LENGTH_SIZE 9
 #define ASN1_MAX_TL_SIZE (ASN1_MAX_TAG_SIZE+ASN1_MAX_LENGTH_SIZE)
 extern ASN1_API long
-  asn1_get_length_der (const unsigned char *der, int der_len, int *len);
+  EXPORT_FUNC(asn1_get_length_der) (const unsigned char *der, int der_len, int *len);
 
 extern ASN1_API long
-  asn1_get_length_ber (const unsigned char *ber, int ber_len, int *len);
+  EXPORT_FUNC(asn1_get_length_ber) (const unsigned char *ber, int ber_len, int *len);
 
 extern ASN1_API void
-  asn1_length_der (unsigned long int len, unsigned char *der, int *der_len);
+  EXPORT_FUNC(asn1_length_der) (unsigned long int len, unsigned char *der, int *der_len);
 
 /* Other utility functions. */
 

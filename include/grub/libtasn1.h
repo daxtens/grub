@@ -46,9 +46,9 @@
 #define __LIBTASN1_CONST__  __attribute__((const))
 #define __LIBTASN1_PURE__  __attribute__((pure))
 
-#include <sys/types.h>
-#include <time.h>
-#include <stdio.h>		/* for FILE* */
+#include <grub/types.h>
+#include <grub/time.h>
+//#include <stdio.h>		/* for FILE* */
 
 #ifdef __cplusplus
 extern "C"

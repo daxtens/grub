@@ -26,7 +26,13 @@
 #include "gstr.h"
 #include "structure.h"
 #include "element.h"
-#include "c-ctype.h"
+
+/*
+ * grub: grub_isdigit provides the same functionality as c_isdigit: it
+ * determines if the input is an ASCII digit without regard for locale.
+ * So use that instead of importing c-ctype from gnulib.
+ */
+#define c_isdigit grub_isdigit
 
 char _asn1_identifierMissing[ASN1_MAX_NAME_SIZE + 1];	/* identifier name not found */
 

@@ -30,8 +30,14 @@
 #include "parser_aux.h"
 #include <gstr.h>
 #include "structure.h"
-#include "c-ctype.h"
 #include "element.h"
+
+/*
+ * grub: grub_isdigit provides the same functionality as c_isdigit: it
+ * determines if the input is an ASCII digit without regard for locale.
+ * So use that instead of importing c-ctype from gnulib.
+ */
+#define c_isdigit grub_isdigit
 
 void
 _asn1_hierarchical_name (asn1_node_const node, char *name, int name_size)

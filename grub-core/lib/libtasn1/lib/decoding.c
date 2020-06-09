@@ -32,7 +32,13 @@
 #include <element.h>
 #include <limits.h>
 #include <intprops.h>
-#include <c-ctype.h>
+
+/*
+ * grub: grub_isdigit provides the same functionality as c_isdigit: it
+ * determines if the input is an ASCII digit without regard for locale.
+ * So use that instead of importing c-ctype from gnulib.
+ */
+#define c_isdigit grub_isdigit
 
 #ifdef DEBUG
 # define warn() fprintf(stderr, "%s: %d\n", __func__, __LINE__)

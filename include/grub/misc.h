@@ -366,6 +366,15 @@ grub_uint64_t EXPORT_FUNC(grub_divmod64) (grub_uint64_t n,
 #define GRUB_DIVISION_IN_SOFTWARE 0
 #endif
 
+/* 32-bit platforms will need helpers for 64-bit division */
+#if !defined(GRUB_MACHINE_EMU) && (GRUB_DIVISION_IN_SOFTWARE || defined(__powerpc__) || \
+    (defined(__i386__)))
+#define GRUB_64BIT_DIVISION_IN_SOFTWARE 1
+#else
+#define GRUB_64BIT_DIVISION_IN_SOFTWARE 0
+#endif
+
+
 /* Some division functions need to be in kernel if compiler generates calls
    to them. Otherwise we still need them for consistent tests but they go
    into a separate module.  */
@@ -375,8 +384,14 @@ grub_uint64_t EXPORT_FUNC(grub_divmod64) (grub_uint64_t n,
 #define EXPORT_FUNC_IF_SOFTDIV(x) x
 #endif
 
+#if GRUB_64BIT_DIVISION_IN_SOFTWARE
+#define EXPORT_FUNC_IF_64BIT_SOFTDIV EXPORT_FUNC
+#else
+#define EXPORT_FUNC_IF_64BIT_SOFTDIV(x) x
+#endif
+
 grub_int64_t
-EXPORT_FUNC_IF_SOFTDIV(grub_divmod64s) (grub_int64_t n,
+EXPORT_FUNC_IF_64BIT_SOFTDIV(grub_divmod64s) (grub_int64_t n,
 					grub_int64_t d,
 					grub_int64_t *r);
 

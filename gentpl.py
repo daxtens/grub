@@ -87,6 +87,13 @@ GROUPS["softdiv"] = GROUPS["arm"] + ["ia64_efi"] + GROUPS["riscv32"]
 GROUPS["no_softdiv"]   = GRUB_PLATFORMS[:]
 for i in GROUPS["softdiv"]: GROUPS["no_softdiv"].remove(i)
 
+# Needs software helpers for 64 bit division only
+# Must match GRUB_64BIT_DIVISION_IN_SOFTWARE
+GROUPS["softdiv64"] = GROUPS["softdiv"] + GROUPS["i386"] + GROUPS["powerpc"]
+GROUPS["no_softdiv64"]   = GRUB_PLATFORMS[:]
+for i in GROUPS["softdiv64"]: GROUPS["no_softdiv64"].remove(i)
+
+
 # Miscellaneous groups scheduled to disappear in future
 GROUPS["i386_coreboot_multiboot_qemu"] = ["i386_coreboot", "i386_multiboot", "i386_qemu"]
 GROUPS["nopc"] = GRUB_PLATFORMS[:]; GROUPS["nopc"].remove("i386_pc")

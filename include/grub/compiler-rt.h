@@ -39,6 +39,10 @@ EXPORT_FUNC (__divsi3) (grub_int32_t a, grub_int32_t b);
 grub_int32_t
 EXPORT_FUNC (__modsi3) (grub_int32_t a, grub_int32_t b);
 
+#endif
+
+#if defined(GRUB_64BIT_DIVISION_IN_SOFTWARE) && GRUB_64BIT_DIVISION_IN_SOFTWARE
+
 grub_int64_t
 EXPORT_FUNC (__divdi3) (grub_int64_t a, grub_int64_t b);
 

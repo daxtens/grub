@@ -82,6 +82,10 @@ __modsi3 (grub_int32_t a, grub_int32_t b)
   return ret;
 }
 
+#endif
+
+#ifdef GRUB_64BIT_DIVISION_IN_SOFTWARE
+
 grub_uint64_t
 __udivdi3 (grub_uint64_t a, grub_uint64_t b)
 {

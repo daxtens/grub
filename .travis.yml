@@ -18,6 +18,7 @@ addons:
     - python
     - qemu-system
     - unifont
+    - autopoint
     - gcc-powerpc-linux-gnu
     - gcc-mips-linux-gnu
     - gcc-mipsel-linux-gnu
@@ -29,7 +30,7 @@ addons:
 script:
   # Comments must be outside the command strings below, or the Travis parser
   # will get confused.
-  - ./bootstrap.sh
+  - ./bootstrap
 
   # Build all selected GRUB targets.
   - for target in $GRUB_TARGETS; do

@@ -185,7 +185,6 @@ kernel = {
   terminfoinkernel = lib/arg.c;
 
   softdiv = lib/division.c;
-  softdiv64 = lib/division64.c;
 
   i386 = kern/i386/dl.c;
   i386_xen = kern/i386/dl.c;
@@ -2160,9 +2159,7 @@ module = {
 module = {
   name = div;
   common = lib/division.c;
-  common = lib/division64.c;
   enable = no_softdiv;
-  enable = no_softdiv64;
 };
 
 module = {

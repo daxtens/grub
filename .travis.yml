@@ -26,6 +26,9 @@ addons:
     - gcc-sparc64-linux-gnu
     - gcc-arm-linux-gnueabi
     - gcc-aarch64-linux-gnu
+    - xorriso
+    - openbios-ppc
+    - openbios-sparc
 
 script:
   # Comments must be outside the command strings below, or the Travis parser
@@ -47,12 +50,19 @@ script:
       mkdir obj-$target;
       JOBS=`getconf _NPROCESSORS_ONLN 2> /dev/null || echo 1`;
       [ "$JOBS" == 1 ] || JOBS=$(($JOBS + 1));
-      ( cd obj-$target && ../configure --target=$arch --with-platform=$plat --prefix=/tmp/grub && make -j$JOBS && make -j$JOBS install ) &> log || ( cat log; false );
+      ( cd obj-$target &&
+        ../configure --target=$arch --with-platform=$plat --prefix=/tmp/grub &&
+        make -j$JOBS && make -j$JOBS install ) &> log || ( cat log; false );
+      if [ "$CHECK" = "yes" ]; then ( cd obj-$target && make test_asn1 && ./test_asn1 ); fi
     done
 
 matrix:
   include:
   # Each env setting here is a dedicated build.
+    - name: "emu"
+      env:
+        - GRUB_TARGETS="x86_64-emu"
+        - CHECK=yes
     - name: "x86_64"
       env:
         - GRUB_TARGETS="x86_64-efi x86_64-xen"
@@ -62,9 +72,11 @@ matrix:
     - name: "powerpc"
       env:
         - GRUB_TARGETS="powerpc-ieee1275"
+        - CHECK=yes
     - name: "sparc64"
       env:
         - GRUB_TARGETS="sparc64-ieee1275"
+        - CHECK=yes
     - name: "mips"
       env:
         - GRUB_TARGETS="mips-arc mips-qemu_mips"

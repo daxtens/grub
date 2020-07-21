@@ -272,6 +272,8 @@ main (int argc, char *argv[])
 
   dir = xstrdup (dir);
 
+  __AFL_INIT();
+
   /* Start GRUB!  */
   if (setjmp (main_env) == 0)
     grub_main ();

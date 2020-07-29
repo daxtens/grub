@@ -42,16 +42,12 @@ typedef struct grub_efi_shim_lock_protocol grub_efi_shim_lock_protocol_t;
 static grub_efi_guid_t shim_lock_guid = GRUB_EFI_SHIM_LOCK_GUID;
 static grub_efi_shim_lock_protocol_t *sl;
 
-/* List of modules which cannot be loaded if UEFI secure boot mode is enabled. */
-static const char * const disabled_mods[] = {"iorw", "memrw", "wrmsr", NULL};
-
 static grub_err_t
 shim_lock_init (grub_file_t io, enum grub_file_type type,
 		void **context __attribute__ ((unused)),
 		enum grub_verify_flags *flags)
 {
-  const char *b, *e;
-  int i;
+  const char *dangerous_mod;
 
   *flags = GRUB_VERIFY_FLAGS_SKIP_VERIFICATION;
 
@@ -61,22 +57,13 @@ shim_lock_init (grub_file_t io, enum grub_file_type type,
   switch (type & GRUB_FILE_TYPE_MASK)
     {
     case GRUB_FILE_TYPE_GRUB_MODULE:
-      /* Establish GRUB module name. */
-      b = grub_strrchr (io->name, '/');
-      e = grub_strrchr (io->name, '.');
-
-      b = b ? (b + 1) : io->name;
-      e = e ? e : io->name + grub_strlen (io->name);
-      e = (e > b) ? e : io->name + grub_strlen (io->name);
-
-      for (i = 0; disabled_mods[i]; i++)
-	if (!grub_strncmp (b, disabled_mods[i], grub_strlen (b) - grub_strlen (e)))
-	  {
-	    grub_error (GRUB_ERR_ACCESS_DENIED,
-			N_("module cannot be loaded in UEFI secure boot mode: %s"),
-			io->name);
-	    return GRUB_ERR_ACCESS_DENIED;
-	  }
+      if (grub_is_dangerous_module (io))
+	{
+	  grub_error (GRUB_ERR_ACCESS_DENIED,
+		      N_("module cannot be loaded in UEFI secure boot mode: %s"),
+		      io->name);
+	  return GRUB_ERR_ACCESS_DENIED;
+	}
 
       /* Fall through. */
 
@@ -91,14 +78,14 @@ shim_lock_init (grub_file_t io, enum grub_file_type type,
     case GRUB_FILE_TYPE_BSD_KERNEL:
     case GRUB_FILE_TYPE_XNU_KERNEL:
     case GRUB_FILE_TYPE_PLAN9_KERNEL:
-      for (i = 0; disabled_mods[i]; i++)
-	if (grub_dl_get (disabled_mods[i]))
-	  {
-	    grub_error (GRUB_ERR_ACCESS_DENIED,
-			N_("cannot boot due to dangerous module in memory: %s"),
-			disabled_mods[i]);
-	    return GRUB_ERR_ACCESS_DENIED;
-	  }
+      dangerous_mod = grub_dangerous_module_loaded ();
+      if (dangerous_mod)
+	{
+	  grub_error (GRUB_ERR_ACCESS_DENIED,
+		      N_("cannot boot due to dangerous module in memory: %s"),
+		      dangerous_mod);
+	  return GRUB_ERR_ACCESS_DENIED;
+	}
 
       *flags = GRUB_VERIFY_FLAGS_SINGLE_CHUNK;
 

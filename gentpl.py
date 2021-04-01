@@ -692,6 +692,7 @@ def module(defn, platform):
 
     gvar_add("dist_noinst_DATA", extra_dist(defn))
     gvar_add("BUILT_SOURCES", "$(nodist_" + cname(defn) + "_SOURCES)")
+    gvar_add("OBJECTS_FOR_FUZZ_EMU", "$(" + cname(defn) + "_OBJECTS)")
     gvar_add("CLEANFILES", "$(nodist_" + cname(defn) + "_SOURCES)")
 
     gvar_add("MOD_FILES", name + ".mod")
@@ -721,6 +722,7 @@ def kernel(defn, platform):
     gvar_add("dist_noinst_DATA", extra_dist(defn))
     gvar_add("BUILT_SOURCES", "$(nodist_" + cname(defn) + "_SOURCES)")
     gvar_add("CLEANFILES", "$(nodist_" + cname(defn) + "_SOURCES)")
+    gvar_add("OBJECTS_FOR_FUZZ_EMU", "$(" + cname(defn) + "_OBJECTS)")
 
     gvar_add("platform_DATA", name + ".img")
     gvar_add("CLEANFILES", name + ".img")

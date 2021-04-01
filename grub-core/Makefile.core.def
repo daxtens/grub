@@ -397,8 +397,8 @@ program = {
   emu = kern/emu/full.c;
   emu_nodist = grub_emu_init.c;
 
-  ldadd = 'kernel.exec$(EXEEXT)';
-  ldadd = '$(MODULE_FILES)';
+  //ldadd = 'kernel.exec$(EXEEXT)';
+  ldadd = '$(OBJECTS_FOR_FUZZ_EMU)';
   ldadd = 'lib/gnulib/libgnu.a $(LIBINTL) $(LIBUTIL) $(LIBSDL) $(LIBUSB) $(LIBPCIACCESS) $(LIBDEVMAPPER) $(LIBZFS) $(LIBNVPAIR) $(LIBGEOM)';
 
   enable = emu;

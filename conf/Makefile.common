@@ -126,6 +126,8 @@ EXTRA_DIST =
 CLEANFILES =
 BUILT_SOURCES =
 
+OBJECTS_FOR_FUZZ_EMU =
+
 # Rules for Automake input
 
 .PRECIOUS: $(top_srcdir)/Makefile.util.am

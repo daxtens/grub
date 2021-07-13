@@ -61,6 +61,7 @@ decomp_get16 (struct grub_ntfs_comp *cc, grub_uint16_t * res)
 {
   grub_uint8_t c1 = 0, c2 = 0;
 
+  *res = 0;
   if ((decomp_getch (cc, &c1)) || (decomp_getch (cc, &c2)))
     return grub_errno;
   *res = ((grub_uint16_t) c2) * 256 + ((grub_uint16_t) c1);

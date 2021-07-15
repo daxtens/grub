@@ -505,5 +505,18 @@ windowsdir: $(PROGRAMS) $(starfield_DATA) $(platform_DATA)
 		cp -fp $$x $(windowsdir)/$(target_cpu)-$(platform)/$$x; \
 	done
 
-commands/rust-hello/target/release/librust_hello.a:
-	cd commands/rust-hello; cargo rustc --release -- -C code-model=large -C relocation-model=static -C target-feature="-mmx,-sse,+soft-float"
+.PHONY: rust_modules
+
+rust_modules: commands/rust-hello/target/$(platform)/release/librust_hello.a
+
+# arguably we should set these more broadly but emu doesn't care.
+if COND_x86_64_efi
+rustflags="-C code-model=large -C relocation-model=static -C target-feature=-mmx,-sse,+soft-float"
+else
+rustflags=""
+endif
+
+commands/rust-hello/target/$(platform)/release/librust_hello.a:
+	cd commands/rust-hello; cargo rustc --release --target=$(target) -- $(rustflags)
+
+CLEANFILES += commands/rust-hello/target/$(platform)/release/librust_hello.a

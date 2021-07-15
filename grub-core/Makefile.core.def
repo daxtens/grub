@@ -2531,5 +2531,5 @@ module = {
 module = {
   name = rust_hello;
   common = commands/rust-hello/wrap.c;
-  ldadd = "commands/rust-hello/target/release/librust_hello.a";
+  ldadd = "commands/rust-hello/target/$(target)/release/librust_hello.a";
 };

@@ -504,3 +504,8 @@ windowsdir: $(PROGRAMS) $(starfield_DATA) $(platform_DATA)
 	for x in $(platform_DATA); do \
 		cp -fp $$x $(windowsdir)/$(target_cpu)-$(platform)/$$x; \
 	done
+
+commands/rust-hello/target/release/librust_hello.a:
+	cd commands/rust-hello; cargo build --release
+
+rust_hello.module$(EXEEXT): commands/rust-hello/target/release/librust_hello.a

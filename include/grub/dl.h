@@ -66,6 +66,23 @@ grub_##name##_fini (void) { grub_mod_fini (); } \
 static void \
 grub_mod_fini (void)
 
+#elif defined(RUST_WRAPPER)
+
+#define GRUB_MOD_INIT(name)	\
+void grub_##name##_init(void); \
+static void __attribute__((used))  \
+grub_mod_init (grub_dl_t mod __attribute__ ((unused))) \
+{ \
+  grub_##name##_init(); \
+}
+
+#define GRUB_MOD_FINI(name)	\
+void grub_##name##_fini(void); \
+static void __attribute__((used)) \
+grub_mod_fini (void) \
+{ \
+  grub_##name##_fini(); \
+}
 #else
 
 #define GRUB_MOD_INIT(name)	\

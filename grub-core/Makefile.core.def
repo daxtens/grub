@@ -2527,3 +2527,10 @@ module = {
   common = commands/i386/wrmsr.c;
   enable = x86;
 };
+
+module = {
+  name = rust_hello;
+  common = commands/rust-hello/wrap.c;
+  ldadd = "commands/rust-hello/target/release/librust_hello.a";
+  enable = emu;
+};

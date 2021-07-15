@@ -11,10 +11,6 @@ crate_type = ["staticlib"]
 panic="abort"
 lto = true
 
-#[target]
-#"features": "-mmx,-sse,+soft-float"
-
 [dependencies]
-cty = "^0.2"
-
+grub = { path = "../../lib/rust" }
 

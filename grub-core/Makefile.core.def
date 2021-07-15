@@ -2531,5 +2531,6 @@ module = {
 module = {
   name = rust_hello;
   common = commands/rust-hello/wrap.c;
-  ldadd = "commands/rust-hello/target/$(target)/release/librust_hello.a";
+  common_nodist = "commands/rust-hello/target/$(rust_target)/release/librust_hello.a";
+  ldadd = "commands/rust-hello/target/$(rust_target)/release/librust_hello.a";
 };

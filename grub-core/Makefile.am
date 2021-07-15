@@ -505,18 +505,39 @@ windowsdir: $(PROGRAMS) $(starfield_DATA) $(platform_DATA)
 		cp -fp $$x $(windowsdir)/$(target_cpu)-$(platform)/$$x; \
 	done
 
-.PHONY: rust_modules
 
-rust_modules: commands/rust-hello/target/$(platform)/release/librust_hello.a
-
-# arguably we should set these more broadly but emu doesn't care.
 if COND_x86_64_efi
-rustflags="-C code-model=large -C relocation-model=static -C target-feature=-mmx,-sse,+soft-float"
+# arguably we should set these more broadly but emu doesn't care.
+rustflags=-C code-model=large -C relocation-model=static -C target-feature=-mmx,-sse,+soft-float
+# override x86_64-pc-linux-gnu
+rust_target=x86_64-unknown-linux-gnu
 else
-rustflags=""
+if COND_powerpc_ieee1275
+rustflags=-C target-feature=+soft-float
+rust_target=$(target)
+else
+if COND_emu
+rustflags=
+# override x86_64-pc-linux-gnu, can emu be built elsewhere?
+rust_target=x86_64-unknown-linux-gnu
+else
+rustflags=
+rust_target=$(target)
+endif
+endif
 endif
 
-commands/rust-hello/target/$(platform)/release/librust_hello.a:
-	cd commands/rust-hello; cargo rustc --release --target=$(target) -- $(rustflags)
+lib/rust/src/bindings.rs: lib/rust/bindings.h
+	bindgen --use-core lib/rust/bindings.h --ctypes-prefix=cty -o lib/rust/src/bindings.rs -- -I ../include -I.. -DGRUB_FILE='"<rust bindings>"'
 
-CLEANFILES += commands/rust-hello/target/$(platform)/release/librust_hello.a
+CLEANFILES += lib/rust/src/bindings.rs
+
+lib/rust/target/$(rust_target)/release/libgrub.rlib: lib/rust/src/bindings.rs
+	cd lib/rust; cargo rustc --release  --target=$(rust_target) -- $(rustflags)
+
+CLEANFILES += lib/rust/target/$(rust_target)/release/libgrub.rlib
+
+commands/rust-hello/target/$(rust_target)/release/librust_hello.a: lib/rust/target/$(rust_target)/release/libgrub.rlib
+	cd commands/rust-hello; cargo rustc --release --target=$(rust_target) -- $(rustflags)
+
+CLEANFILES += commands/rust-hello/target/$(rust_target)/release/librust_hello.a

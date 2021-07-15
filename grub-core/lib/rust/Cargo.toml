@@ -1,0 +1,8 @@
+[package]
+name = "grub"
+version = "0.1.0"
+authors = ["Daniel Axtens <dja@axtens.net>"]
+edition = "2018"
+
+[dependencies]
+cty = "^0.2"

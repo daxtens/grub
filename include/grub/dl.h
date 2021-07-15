@@ -38,7 +38,26 @@
 
 #ifndef GRUB_MOD_INIT
 
-#if !defined (GRUB_UTIL) && !defined (GRUB_MACHINE_EMU) && !defined (GRUB_KERNEL)
+#if defined(RUST_WRAPPER)
+
+/* Rust modules always use grub_##name##_{init,fini} */
+
+#define GRUB_MOD_INIT(name)	\
+void grub_##name##_init(void); \
+static void __attribute__((used))  \
+grub_mod_init (grub_dl_t mod __attribute__ ((unused))) \
+{ \
+  grub_##name##_init(); \
+}
+
+#define GRUB_MOD_FINI(name)	\
+void grub_##name##_fini(void); \
+static void __attribute__((used)) \
+grub_mod_fini (void) \
+{ \
+  grub_##name##_fini(); \
+}
+#elif !defined (GRUB_UTIL) && !defined (GRUB_MACHINE_EMU) && !defined (GRUB_KERNEL)
 
 #define GRUB_MOD_INIT(name)	\
 static void grub_mod_init (grub_dl_t mod __attribute__ ((unused))) __attribute__ ((used)); \
@@ -66,23 +85,6 @@ grub_##name##_fini (void) { grub_mod_fini (); } \
 static void \
 grub_mod_fini (void)
 
-#elif defined(RUST_WRAPPER)
-
-#define GRUB_MOD_INIT(name)	\
-void grub_##name##_init(void); \
-static void __attribute__((used))  \
-grub_mod_init (grub_dl_t mod __attribute__ ((unused))) \
-{ \
-  grub_##name##_init(); \
-}
-
-#define GRUB_MOD_FINI(name)	\
-void grub_##name##_fini(void); \
-static void __attribute__((used)) \
-grub_mod_fini (void) \
-{ \
-  grub_##name##_fini(); \
-}
 #else
 
 #define GRUB_MOD_INIT(name)	\

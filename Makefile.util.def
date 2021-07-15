@@ -1211,6 +1211,12 @@ script = {
   common = tests/syslinux_test.in;
 };
 
+script = {
+  testcase;
+  name = test_rust;
+  common = tests/test_rust.in;
+};
+
 program = {
   testcase;
   name = example_unit_test;

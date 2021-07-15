@@ -506,6 +506,4 @@ windowsdir: $(PROGRAMS) $(starfield_DATA) $(platform_DATA)
 	done
 
 commands/rust-hello/target/release/librust_hello.a:
-	cd commands/rust-hello; cargo build --release
-
-rust_hello.module$(EXEEXT): commands/rust-hello/target/release/librust_hello.a
+	cd commands/rust-hello; cargo rustc --release -- -C code-model=large -C relocation-model=static -C target-feature="-mmx,-sse,+soft-float"

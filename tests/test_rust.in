@@ -1,0 +1,21 @@
+#! @BUILD_SHEBANG@
+
+. "@builddir@/grub-core/modinfo.sh"
+
+case "${grub_modinfo_target_cpu}-${grub_modinfo_platform}" in
+    *-emu)
+	echo "This doesn't work on grub-emu atm."
+	echo "Run grub-emu|less and look for 'Hello from Rust'"
+	exit 0
+	;;
+    *)
+	out=`echo insmod rust_hello | @builddir@/grub-shell`
+	;;
+esac
+
+if echo $out | grep "Hello from Rust" > /dev/null; then
+    exit 0
+else
+    echo "Did not see hello from rust"
+    exit 1
+fi
